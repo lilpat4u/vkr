@@ -34,16 +34,18 @@ while ($row = $result->fetch_assoc()) {
 <head>
     <meta charset="UTF-8">
     <title>Продукция</title>
-    <link rel="stylesheet" href="style/products.css">
+    <link rel="stylesheet" href="style/main.css">
 </head>
 <body>
-               <div class="header__list">
-             <a href="index.php" class="header__link">Главная</a>
-             <a href="products.php" class="header__link">Продукция</a>
-             <a href="my_orders.php" class="header__link">Мои заказы</a>
-             <?php if (!empty($_SESSION['client_login'])): ?>
-             <a href="basket.php" class="header__link">Корзина</a>
-              <?php endif; ?>
+    <div class="main__content">
+        <header class="header">
+            <div class="header__list">
+                <a href="index.php" class="header__link">Главная</a>
+                <a href="products.php" class="header__link">Продукция</a>
+                <a href="my_orders.php" class="header__link">Мои заказы</a>
+                <?php if (!empty($_SESSION['client_login'])): ?>
+                <a href="basket.php" class="header__link">Корзина</a>
+                <?php endif; ?>
             </div>
 
             <div class="header__profile">
@@ -61,39 +63,43 @@ while ($row = $result->fetch_assoc()) {
             </div>
         </header>
 
-<h2>Наша продукция</h2>
-<div class="products">
-    <?php foreach ($products as $index => $product): ?>
-        <?php
-        $imageName = strtolower(str_replace(' ', '_', $product['name'])) . '.jpg';
-        ?>
-        <div class="product">
-            <img src="images/products/<?= $imageName ?>" alt="<?= htmlspecialchars($product['name']) ?>">
-            <h3><?= htmlspecialchars($product['name']) ?></h3>
-            <p><?= htmlspecialchars($product['description']) ?></p>
-            <p>
-                <?php if ($product['price'] !== null): ?>
-                    Цена: <?= number_format($product['price'], 2, ',', ' ') ?> руб. за <?= htmlspecialchars($product['unit']) ?>
-                <?php else: ?>
-                    Цена: не указана
-                <?php endif; ?>
-            </p>
-            <form action="add_to_cart.php" method="post">
-                 <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
-                 <input type="hidden" name="price_id" value="<?= $product['price_id'] ?? 0 ?>">
-                 <button type="submit">В корзину</button>
-            </form>
-
-        </div>
-        <?php if (($index + 1) % 3 === 0): ?>
-            <div style="clear: both;"></div>
-        <?php endif; ?>
-    <?php endforeach; ?>
-</div>
-    <footer class="footer">
-    <div class="footer__content">
-        <p>Телефон для связи: +375-17-272-49-38 | Почтовый адрес: info@tmcontact.by | Юридический адрес: г.Минск, ул.Мележа, д.5, корп.2, оф.1504</p>
+        <main>
+            <div class="main__label">
+                <h2>Наша продукция</h2>
+            </div>
+            <div class="products">
+                <?php foreach ($products as $index => $product): ?>
+                    <?php
+                    $imageName = strtolower(str_replace(' ', '_', $product['name'])) . '.jpg';
+                    ?>
+                    <div class="product">
+                        <img src="images/products/<?= $imageName ?>" alt="<?= htmlspecialchars($product['name']) ?>">
+                        <h3><?= htmlspecialchars($product['name']) ?></h3>
+                        <p><?= htmlspecialchars($product['description']) ?></p>
+                        <p>
+                            <?php if ($product['price'] !== null): ?>
+                                Цена: <?= number_format($product['price'], 2, ',', ' ') ?> руб. за <?= htmlspecialchars($product['unit']) ?>
+                            <?php else: ?>
+                                Цена: не указана
+                            <?php endif; ?>
+                        </p>
+                        <form action="add_to_cart.php" method="post">
+                            <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
+                            <input type="hidden" name="price_id" value="<?= $product['price_id'] ?? 0 ?>">
+                            <button type="submit">В корзину</button>
+                        </form>
+                    </div>
+                    <?php if (($index + 1) % 3 === 0): ?>
+                        <div style="clear: both;"></div>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+            </div>
+        </main>
     </div>
-</footer>
+    <footer class="footer">
+        <div class="footer__content">
+            <p>Телефон для связи: +375-17-272-49-38 | Почтовый адрес: info@tmcontact.by | Юридический адрес: г.Минск, ул.Мележа, д.5, корп.2, оф.1504</p>
+        </div>
+    </footer>
 </body>
 </html>

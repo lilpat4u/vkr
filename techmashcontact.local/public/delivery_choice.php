@@ -87,74 +87,118 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <title>Выбор доставки</title>
-    <style>
-        .hidden { display: none; }
-        .field-block { margin-bottom: 10px; }
-    </style>
+    <link rel="stylesheet" href="style/main.css">
     <script>
     function toggleDeliveryFields() {
-    const type = document.querySelector('input[name="delivery_type"]:checked').value;
-    const fields = document.getElementById('delivery_fields');
-    const pickup = document.getElementById('pickup_info');
+        const type = document.querySelector('input[name="delivery_type"]:checked').value;
+        const fields = document.getElementById('delivery_fields');
+        const pickup = document.getElementById('pickup_info');
 
-    // Все input'ы внутри блока доставки
-    const deliveryInputs = fields.querySelectorAll('input, select');
+        // Все input'ы внутри блока доставки
+        const deliveryInputs = fields.querySelectorAll('input, select');
 
-    if (type === 'delivery') {
-        fields.style.display = 'block';
-        pickup.style.display = 'none';
-        deliveryInputs.forEach(input => input.required = true);
-    } else {
-        fields.style.display = 'none';
-        pickup.style.display = 'block';
-        deliveryInputs.forEach(input => input.required = false);
+        if (type === 'delivery') {
+            fields.style.display = 'block';
+            pickup.style.display = 'none';
+            deliveryInputs.forEach(input => input.required = true);
+        } else {
+            fields.style.display = 'none';
+            pickup.style.display = 'block';
+            deliveryInputs.forEach(input => input.required = false);
+        }
     }
-    }
-
     </script>
 </head>
 <body>
-    <h2>Выберите способ доставки</h2>
+    <div class="main__content">
+        <header class="header">
+            <div class="header__list">
+                <a href="index.php" class="header__link">Главная</a>
+                <a href="products.php" class="header__link">Продукция</a>
+                <a href="my_orders.php" class="header__link">Мои заказы</a>
+                <?php if (!empty($_SESSION['client_login'])): ?>
+                <a href="basket.php" class="header__link">Корзина</a>
+                <?php endif; ?>
+            </div>
 
-    <form method="post">
-        <div class="field-block">
-            <label><input type="radio" name="delivery_type" value="selfdriven" checked onchange="toggleDeliveryFields()"> Самовывоз</label>
-            <label><input type="radio" name="delivery_type" value="delivery" onchange="toggleDeliveryFields()"> Доставка</label>
+            <div class="header__profile">
+                <?php 
+                if (empty($_SESSION['client_login'])) {
+                    echo "<p>Вы вошли на сайт, как гость</p>
+                          <form action='login.php'><button>Войти</button></form>
+                          <form action='reg.php'><button>Зарегистрироваться</button></form>";
+                } else {
+                    echo "<p>Добро пожаловать, " . htmlspecialchars($_SESSION['client_name']) . "!</p>";
+                    echo "<p>Вы успешно вошли в систему как " . htmlspecialchars($_SESSION['client_login']) . ".</p>";
+                    echo "<a href='logout.php'>Выйти</a>";
+                }
+                ?>
+            </div>
+        </header>
+
+        <main>
+            <div class="main__label">
+                <h2>Выберите способ доставки</h2>
+            </div>
+
+            <div class="delivery-form">
+                <form method="post">
+                    <div class="delivery-type">
+                        <label class="radio-label">
+                            <input type="radio" name="delivery_type" value="selfdriven" checked onchange="toggleDeliveryFields()">
+                            <span>Самовывоз</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="delivery_type" value="delivery" onchange="toggleDeliveryFields()">
+                            <span>Доставка</span>
+                        </label>
+                    </div>
+
+                    <div id="pickup_info" class="delivery-info">
+                        <p>Вы можете забрать свой товар <strong>с <?= $pickupDate ?></strong> с 8:00 до 18:00.</p>
+                    </div>
+
+                    <div id="delivery_fields" class="hidden">
+                        <div class="form-group">
+                            <label>Город:</label>
+                            <input type="text" name="town" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Улица:</label>
+                            <input type="text" name="street" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Дом:</label>
+                            <input type="text" name="number" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Квартира:</label>
+                            <input type="text" name="apartment" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Время доставки:</label>
+                            <select name="delivery_slot" required>
+                                <option value="">-- Выберите слот --</option>
+                                <?php foreach ($slots as $slot): ?>
+                                    <option value="<?= $slot['id'] ?>">
+                                        <?= date('d.m.Y H:i', strtotime($slot['start_time'])) ?> - <?= date('H:i', strtotime($slot['end_time'])) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-button">Оплатить</button>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <footer class="footer">
+        <div class="footer__content">
+            <p>Телефон для связи: +375-17-272-49-38 | Почтовый адрес: info@tmcontact.by | Юридический адрес: г.Минск, ул.Мележа, д.5, корп.2, оф.1504</p>
         </div>
-
-        <div id="pickup_info">
-            <p>Вы можете забрать свой товар <strong>с <?= $pickupDate ?></strong> с 8:00 до 18:00.</p>
-        </div>
-
-        <div id="delivery_fields" class="hidden">
-            <div class="field-block">
-                <label>Город: <input type="text" name="town" required></label>
-            </div>
-            <div class="field-block">
-                <label>Улица: <input type="text" name="street" required></label>
-            </div>
-            <div class="field-block">
-                <label>Дом: <input type="text" name="number" required></label>
-            </div>
-            <div class="field-block">
-                <label>Квартира: <input type="text" name="apartment" required></label>
-            </div>
-            <div class="field-block">
-                <label>Время доставки:
-                    <select name="delivery_slot" required>
-                        <option value="">-- Выберите слот --</option>
-                        <?php foreach ($slots as $slot): ?>
-                            <option value="<?= $slot['id'] ?>">
-                                <?= date('d.m.Y H:i', strtotime($slot['start_time'])) ?> - <?= date('H:i', strtotime($slot['end_time'])) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </label>
-            </div>
-        </div>
-
-        <button type="submit">Оплатить</button>
-    </form>
+    </footer>
 
     <script>
         // Установить состояние при загрузке

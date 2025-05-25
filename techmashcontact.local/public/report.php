@@ -101,113 +101,131 @@ $result = $stmt->get_result();
 
 
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <title>Создать отчет</title>
-    <style>
-        body { font-family: sans-serif; padding: 20px; }
-        label, input, select { margin: 10px 0; display: block; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 8px; border: 1px solid #ccc; text-align: left; }
-    </style>
+    <link rel="stylesheet" href="style/main.css">
 </head>
 <body>
-        <div class="main__content">
+    <div class="main__content">
         <header class="header">
             <div class="header__list">
                 <a href="worker_dashboard.php" class="header__link">Заявки</a>
                 <a href="clients.php" class="header__link">Клиенты</a>
                 <a href="task.php" class="header__link">Задачи</a>
+                <a href="shipments.php" class="header__link">Отгрузки</a>
             </div>
-            <h2>Добро пожаловать, <?php echo $_SESSION['worker_surname']; ?> <?php echo $_SESSION['worker_name']; ?>!</h2>
-            <p>Вы вошли как сотрудник: <?php echo $_SESSION['worker_login']; ?>.</p>
-            <a href="logout.php">Выйти</a>   
+
+            <div class="header__profile">
+                <p>Добро пожаловать, <?php echo htmlspecialchars($_SESSION['worker_surname'] . ' ' . $_SESSION['worker_name']); ?>!</p>
+                <p>Вы вошли как сотрудник: <?php echo htmlspecialchars($_SESSION['worker_login']); ?></p>
+                <a href="logout.php" class="header__link">Выйти</a>
+            </div>
         </header>
-    </div> 
-    <h1>Создать отчет</h1>
 
-<form method="GET" action="report.php">
-    <label>Сотрудник:
-        <select name="worker">
-            <option value="">-- Все --</option>
-            <?php foreach ($workers as $w): ?>
-                <option value="<?= $w['workersnumber'] ?>" <?= $w['workersnumber'] == $selected_worker ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($w['full_name']) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-    </label>
+        <main>
+            <div class="main__label">
+                <h1>Создать отчет</h1>
+            </div>
 
-    <label>Клиент:
-        <input type="text" name="client" value="<?= htmlspecialchars($client_query) ?>" placeholder="Иванов">
-    </label>
+            <div class="search-form">
+                <form method="GET" action="report.php">
+                    <div class="form-group">
+                        <label>Сотрудник:</label>
+                        <select name="worker">
+                            <option value="">-- Все --</option>
+                            <?php foreach ($workers as $w): ?>
+                                <option value="<?= $w['workersnumber'] ?>" <?= $w['workersnumber'] == $selected_worker ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($w['full_name']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
 
-<label>Товар:
-    <select name="product">
-        <option value="">-- Все --</option>
-        <?php foreach ($products as $product): ?>
-            <option value="<?= htmlspecialchars($product['name']) ?>" <?= $product['name'] == $product_query ? 'selected' : '' ?>>
-                <?= htmlspecialchars($product['name']) ?>
-            </option>
-        <?php endforeach; ?>
-    </select>
-</label>
+                    <div class="form-group">
+                        <label>Клиент:</label>
+                        <input type="text" name="client" value="<?= htmlspecialchars($client_query) ?>" placeholder="Иванов">
+                    </div>
 
+                    <div class="form-group">
+                        <label>Товар:</label>
+                        <select name="product">
+                            <option value="">-- Все --</option>
+                            <?php foreach ($products as $product): ?>
+                                <option value="<?= htmlspecialchars($product['name']) ?>" <?= $product['name'] == $product_query ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($product['name']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
 
-    <label>Статус:
-        <select name="status">
-            <option value="">-- Все --</option>
-            <?php foreach ($statuses as $status): ?>
-                <option value="<?= htmlspecialchars($status) ?>" <?= $status == $status_query ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($status) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-    </label>
+                    <div class="form-group">
+                        <label>Статус:</label>
+                        <select name="status">
+                            <option value="">-- Все --</option>
+                            <?php foreach ($statuses as $status): ?>
+                                <option value="<?= htmlspecialchars($status) ?>" <?= $status == $status_query ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($status) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
 
-    <label>Дата с:
-        <input type="date" name="date_from" value="<?= htmlspecialchars($date_from) ?>">
-    </label>
+                    <div class="form-group">
+                        <label>Дата с:</label>
+                        <input type="date" name="date_from" value="<?= htmlspecialchars($date_from) ?>">
+                    </div>
 
-    <label>Дата по:
-        <input type="date" name="date_to" value="<?= htmlspecialchars($date_to) ?>">
-    </label>
+                    <div class="form-group">
+                        <label>Дата по:</label>
+                        <input type="date" name="date_to" value="<?= htmlspecialchars($date_to) ?>">
+                    </div>
 
-    <button type="submit">Применить фильтры</button>
-</form>
+                    <button type="submit" class="submit-button">Применить фильтры</button>
+                </form>
 
+                <form method="GET" action="download_report.php">
+                    <input type="hidden" name="worker" value="<?= htmlspecialchars($selected_worker) ?>">
+                    <input type="hidden" name="client" value="<?= htmlspecialchars($client_query) ?>">
+                    <input type="hidden" name="product" value="<?= htmlspecialchars($product_query) ?>">
+                    <button type="submit" class="submit-button">Скачать Excel</button>
+                </form>
+            </div>
 
-    <form method="GET" action="download_report.php" style="margin-top: 10px;">
-        <input type="hidden" name="worker" value="<?= htmlspecialchars($selected_worker) ?>">
-        <input type="hidden" name="client" value="<?= htmlspecialchars($client_query) ?>">
-        <input type="hidden" name="product" value="<?= htmlspecialchars($product_query) ?>">
-        <button type="submit">Download Excel</button>
-    </form>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Клиент</th>
+                            <th>Статус</th>
+                            <th>Товар</th>
+                            <th>Дата договора</th>
+                            <th>Менеджер</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php while ($row = $result->fetch_assoc()): ?>
+                            <tr>
+                                <td><?= $row['application_id'] ?></td>
+                                <td><?= htmlspecialchars($row['client_name']) ?></td>
+                                <td><?= htmlspecialchars($row['status']) ?></td>
+                                <td><?= htmlspecialchars($row['product']) ?></td>
+                                <td><?= htmlspecialchars($row['date']) ?></td>
+                                <td><?= htmlspecialchars($row['manager_name']) ?></td>
+                            </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Клиент</th>
-                <th>Статус</th>
-                <th>Товар</th>
-                <th>Дата договора</th>
-                <th>Менеджер</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php while ($row = $result->fetch_assoc()): ?>
-                <tr>
-                    <td><?= $row['application_id'] ?></td>
-                    <td><?= htmlspecialchars($row['client_name']) ?></td>
-                    <td><?= htmlspecialchars($row['status']) ?></td>
-                    <td><?= htmlspecialchars($row['product']) ?></td>
-                    <td><?= htmlspecialchars($row['date']) ?></td>
-                    <td><?= htmlspecialchars($row['manager_name']) ?></td>
-                </tr>
-            <?php endwhile; ?>
-        </tbody>
-    </table>
+    <footer class="footer">
+        <div class="footer__content">
+            <p>Телефон для связи: +375-17-272-49-38 | Почтовый адрес: info@tmcontact.by | Юридический адрес: г.Минск, ул.Мележа, д.5, корп.2, оф.1504</p>
+        </div>
+    </footer>
 </body>
 </html>

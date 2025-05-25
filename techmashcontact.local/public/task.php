@@ -113,6 +113,98 @@ $result->free();
 <head>
     <meta charset="UTF-8">
     <title>Задачи</title>
+    <link rel="stylesheet" href="style/main.css">
+    <style>
+        .task-filters {
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+        }
+        .task-filters button {
+            padding: 0.5rem 1rem;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .task-filters button:hover {
+            background-color: #e9ecef;
+        }
+        .task-filters button:disabled {
+            background-color: #2c3e50;
+            color: white;
+            cursor: default;
+        }
+        .task-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .task-header {
+            margin-bottom: 1rem;
+        }
+        .task-title {
+            font-size: 1.2rem;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        .task-info {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+        .task-status {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        .task-description {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        .task-comment {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        .task-form {
+            margin-top: 1rem;
+        }
+        .task-form select {
+            padding: 0.5rem;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            margin-right: 0.5rem;
+        }
+        .task-form textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            resize: vertical;
+        }
+        .task-form button {
+            padding: 0.5rem 1rem;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .task-form button:hover {
+            background-color: #2980b9;
+        }
+    </style>
 </head>
 <body>
     <div class="main__content">
@@ -123,67 +215,85 @@ $result->free();
                 <a href="task.php" class="header__link">Задачи</a>
                 <a href="shipments.php" class="header__link">Отгрузки</a>
             </div>
-            <h2>Добро пожаловать, <?= htmlspecialchars($worker_surname) ?> <?= htmlspecialchars($worker_name) ?>!</h2>
-            <p>Вы вошли как сотрудник: <?= htmlspecialchars($worker_login) ?>.</p>
-            <a href="logout.php">Выйти</a>
+
+            <div class="header__profile">
+                <p>Добро пожаловать, <?= htmlspecialchars($worker_surname) ?> <?= htmlspecialchars($worker_name) ?>!</p>
+                <p>Вы вошли как сотрудник: <?= htmlspecialchars($worker_login) ?></p>
+                <a href="logout.php" class="header__link">Выйти</a>
+            </div>
         </header>
 
-        <h2>Задачи</h2>
+        <main>
+            <div class="main__label">
+                <h1>Задачи</h1>
+            </div>
 
-        <div>
-            <form method="get" style="display:inline;">
-                <input type="hidden" name="filter" value="my">
-                <button type="submit" <?= $filter === 'my' ? 'disabled' : '' ?>>Мои задачи</button>
-            </form>
-            <form method="get" style="display:inline;">
-                <input type="hidden" name="filter" value="all">
-                <button type="submit" <?= $filter === 'all' ? 'disabled' : '' ?>>Все задачи</button>
-            </form>
-        </div>
+            <div class="task-filters">
+                <form method="get">
+                    <input type="hidden" name="filter" value="my">
+                    <button type="submit" <?= $filter === 'my' ? 'disabled' : '' ?>>Мои задачи</button>
+                </form>
+                <form method="get">
+                    <input type="hidden" name="filter" value="all">
+                    <button type="submit" <?= $filter === 'all' ? 'disabled' : '' ?>>Все задачи</button>
+                </form>
+            </div>
 
-        <?php if (empty($tasks)): ?>
-            <p>Задач нет.</p>
-        <?php else: ?>
-            <ul>
-<?php foreach ($tasks as $task): ?>
-    <div style="margin-bottom: 30px; padding: 10px; border-bottom: 1px solid #ccc;">
-        <strong><?= htmlspecialchars($task['title']) ?></strong> (Заявка №<?= $task['application_id'] ?>)<br>
-        Назначено: <?= htmlspecialchars($task['assignee_name']) ?><br>
-        Статус: <strong><?= htmlspecialchars($task['status']) ?></strong><br><br>
+            <?php if (empty($tasks)): ?>
+                <p class="no-results">Задач нет.</p>
+            <?php else: ?>
+                <?php foreach ($tasks as $task): ?>
+                    <div class="task-card">
+                        <div class="task-header">
+                            <div class="task-title">
+                                <?= htmlspecialchars($task['title']) ?> (Заявка №<?= $task['application_id'] ?>)
+                            </div>
+                            <div class="task-info">
+                                Назначено: <?= htmlspecialchars($task['assignee_name']) ?>
+                            </div>
+                            <div class="task-status">
+                                Статус: <?= htmlspecialchars($task['status']) ?>
+                            </div>
+                        </div>
 
-        <form method="POST" style="margin-bottom: 10px;">
-            <input type="hidden" name="task_id" value="<?= $task['id'] ?>">
-            <select name="new_status">
-                <option value="to_do" <?= $task['status'] === 'to_do' ? 'selected' : '' ?>>To_do</option>
-                <option value="in_process" <?= $task['status'] === 'in_process' ? 'selected' : '' ?>>In_process</option>
-                <option value="done" <?= $task['status'] === 'done' ? 'selected' : '' ?>>Done</option>
-                <option value="cancelled" <?= $task['status'] === 'cancelled' ? 'selected' : '' ?>>Cancelled</option>
-            </select>
-            <button type="submit">Обновить</button>
-        </form>
+                        <form method="POST" class="task-form">
+                            <input type="hidden" name="task_id" value="<?= $task['id'] ?>">
+                            <select name="new_status">
+                                <option value="to_do" <?= $task['status'] === 'to_do' ? 'selected' : '' ?>>To_do</option>
+                                <option value="in_process" <?= $task['status'] === 'in_process' ? 'selected' : '' ?>>In_process</option>
+                                <option value="done" <?= $task['status'] === 'done' ? 'selected' : '' ?>>Done</option>
+                                <option value="cancelled" <?= $task['status'] === 'cancelled' ? 'selected' : '' ?>>Cancelled</option>
+                            </select>
+                            <button type="submit">Обновить статус</button>
+                        </form>
 
-        <div style="margin-bottom: 10px;">
-            <strong>Описание:</strong><br>
-            <?= nl2br(htmlspecialchars($task['description'])) ?>
-        </div>
+                        <div class="task-description">
+                            <strong>Описание:</strong><br>
+                            <?= nl2br(htmlspecialchars($task['description'])) ?>
+                        </div>
 
-        <div style="margin-bottom: 10px;">
-            <strong>Комментарий исполнителя:</strong><br>
-            <?= nl2br(htmlspecialchars($task['comment'])) ?>
-        </div>
+                        <div class="task-comment">
+                            <strong>Комментарий исполнителя:</strong><br>
+                            <?= nl2br(htmlspecialchars($task['comment'])) ?>
+                        </div>
 
-        <form method="POST">
-            <input type="hidden" name="task_id" value="<?= $task['id'] ?>">
-            <input type="hidden" name="update_comment" value="1">
-            <textarea name="new_comment" rows="3" style="width: 100%; padding: 8px; box-sizing: border-box; background-color: #fff; border: 1px solid #ccc;"></textarea><br>
-            <button type="submit" style="margin-top: 5px;">Сохранить комментарий</button>
-        </form>
+                        <form method="POST" class="task-form">
+                            <input type="hidden" name="task_id" value="<?= $task['id'] ?>">
+                            <input type="hidden" name="update_comment" value="1">
+                            <textarea name="new_comment" rows="3" placeholder="Введите комментарий..."></textarea>
+                            <button type="submit">Сохранить комментарий</button>
+                        </form>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </main>
     </div>
-<?php endforeach; ?>
 
-            </ul>
-        <?php endif; ?>
-    </div>
+    <footer class="footer">
+        <div class="footer__content">
+            <p>Телефон для связи: +375-17-272-49-38 | Почтовый адрес: info@tmcontact.by | Юридический адрес: г.Минск, ул.Мележа, д.5, корп.2, оф.1504</p>
+        </div>
+    </footer>
 </body>
 </html>
 

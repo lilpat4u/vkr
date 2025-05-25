@@ -152,6 +152,7 @@ $stmt->close();
 <head>
     <meta charset="UTF-8">
     <title>Все заявки</title>
+    <link rel="stylesheet" href="style/main.css">
 </head>
 <body>
     <div class="main__content">
@@ -162,140 +163,130 @@ $stmt->close();
                 <a href="task.php" class="header__link">Задачи</a>
                 <a href="shipments.php" class="header__link">Отгрузки</a>
             </div>
-            <h2>Добро пожаловать, <?php echo $_SESSION['worker_surname']; ?> <?php echo $_SESSION['worker_name']; ?>!</h2>
-            <p>Вы вошли как сотрудник: <?php echo $_SESSION['worker_login']; ?>.</p>
-            <a href="logout.php">Выйти</a>   
+
+            <div class="header__profile">
+                <p>Добро пожаловать, <?php echo htmlspecialchars($_SESSION['worker_surname'] . ' ' . $_SESSION['worker_name']); ?>!</p>
+                <p>Вы вошли как сотрудник: <?php echo htmlspecialchars($_SESSION['worker_login']); ?></p>
+                <a href="logout.php" class="header__link">Выйти</a>
+            </div>
         </header>
-    </div> 
 
-    <h1>Все заявки</h1>
-    <form method="GET" style="margin-bottom: 20px;">
-    <label>Номер заявки: <input type="text" name="app_id" value="<?= isset($_GET['app_id']) ? htmlspecialchars($_GET['app_id']) : '' ?>"></label>
-    <label>Клиент: <input type="text" name="client_name" value="<?= isset($_GET['client_name']) ? htmlspecialchars($_GET['client_name']) : '' ?>"></label>
-    <label>Менеджер: <input type="text" name="manager_name" value="<?= isset($_GET['manager_name']) ? htmlspecialchars($_GET['manager_name']) : '' ?>"></label>
-    <button type="submit">Поиск</button>
-    <a href="?" style="margin-left: 10px;">Сбросить</a>
-    </form>
-    <form method="GET" action="report.php" style="margin-top: 10px;">
-    <button type="submit">Создать отчет</button>
-    </form>
+        <main>
+            <div class="main__label">
+                <h1>Все заявки</h1>
+            </div>
 
-    <?php if ($apps->num_rows === 0): ?>
-        <p>Заявки не найдены.</p>
-    <?php endif; ?>
+            <div class="search-form">
+                <form method="GET">
+                    <div class="form-group">
+                        <label>Номер заявки:</label>
+                        <input type="text" name="app_id" value="<?= isset($_GET['app_id']) ? htmlspecialchars($_GET['app_id']) : '' ?>">
+                    </div>
+                    <div class="form-group">
+                        <label>Клиент:</label>
+                        <input type="text" name="client_name" value="<?= isset($_GET['client_name']) ? htmlspecialchars($_GET['client_name']) : '' ?>">
+                    </div>
+                    <div class="form-group">
+                        <label>Менеджер:</label>
+                        <input type="text" name="manager_name" value="<?= isset($_GET['manager_name']) ? htmlspecialchars($_GET['manager_name']) : '' ?>">
+                    </div>
+                    <button type="submit" class="submit-button">Поиск</button>
+                    <a href="?" class="back-link">Сбросить</a>
+                </form>
 
-    <?php while ($app = $apps->fetch_assoc()): ?>
-        <hr>
-        <h2>Заказ #<?= $app['app_id'] ?> (Статус: <?= htmlspecialchars($app['status']) ?>)</h2>
-        <p><strong>Клиент:</strong> <?= htmlspecialchars("{$app['surname']} {$app['name']} {$app['patronymic']}") ?></p>
+                <form method="GET" action="report.php">
+                    <button type="submit" class="submit-button">Создать отчет</button>
+                </form>
+            </div>
 
-        <?php if ($app['type'] === 'selfdriven'): ?>
-            <p><strong>Самовывоз с:</strong> <?= date('d.m.Y', strtotime($app['pickup_date'])) ?> (с 8:00 до 18:00)</p>
-        <?php else: ?>
-            <p><strong>Доставка:</strong> <?= $app['town'] ?>, ул. <?= $app['street'] ?>, д. <?= $app['number'] ?>, кв. <?= $app['apartment'] ?></p>
-            <?php
-            $slot = null;
-            if (!empty($app['delivery_slot'])) {
-                $stmt = $mysqli->prepare("SELECT start_time, end_time FROM delivery_slots WHERE id = ?");
-                $stmt->bind_param("i", $app['delivery_slot']);
-                $stmt->execute();
-                $slot = $stmt->get_result()->fetch_assoc();
-                $stmt->close();
-            }
-            ?>
-            <?php if ($slot): ?>
-                <p><strong>Время доставки:</strong> <?= date('d.m.Y H:i', strtotime($slot['start_time'])) ?> – <?= date('H:i', strtotime($slot['end_time'])) ?></p>
+            <?php if ($apps->num_rows === 0): ?>
+                <p class="no-results">Заявки не найдены.</p>
             <?php endif; ?>
-        <?php endif; ?>
 
-        <h3>Состав заказа:</h3>
-        <ul>
-            <?php
-            $total = 0;
-            $stmt = $mysqli->prepare("
-                SELECT p.name AS product_name, pl.price, bi.quantity
-                FROM basket_item bi
-                JOIN price_list pl ON bi.price_id = pl.id
-                JOIN product p ON pl.product_id = p.id
-                WHERE bi.basket_id = ?
-            ");
-            $stmt->bind_param("i", $app['basket_id']);
-            $stmt->execute();
-            $products = $stmt->get_result();
-            $stmt->close();
+            <div class="orders-list">
+                <?php while ($app = $apps->fetch_assoc()): ?>
+                    <div class="order-card">
+                        <div class="order-header">
+                            <h2>Заказ #<?= $app['app_id'] ?></h2>
+                            <span class="order-status"><?= htmlspecialchars($app['status']) ?></span>
+                        </div>
 
-            while ($product = $products->fetch_assoc()):
-                $line = $product['price'] * $product['quantity'];
-                $total += $line;
-            ?>
-                <li><?= htmlspecialchars($product['product_name']) ?> — <?= $product['quantity'] ?> × <?= $product['price'] ?> = <?= number_format($line, 0, ',', ' ') ?> руб.</li>
-            <?php endwhile; ?>
-        </ul>
-        <?php
-// Проверка: текущий пользователь — это менеджер, назначенный к заявке?
-$is_manager_for_app = ($app['workersnumber'] == $_SESSION['worker_id']);
+                        <div class="order-details">
+                            <p><strong>Клиент:</strong> <?= htmlspecialchars("{$app['surname']} {$app['name']} {$app['patronymic']}") ?></p>
 
-// Проверим, есть ли уже договор
-$stmt = $mysqli->prepare("SELECT id FROM contract WHERE application_id = ?");
-$stmt->bind_param("i", $app['app_id']);
-$stmt->execute();
-$contract_exists = $stmt->get_result()->num_rows > 0;
-$stmt->close();
+                            <?php if ($app['type'] === 'selfdriven'): ?>
+                                <p><strong>Самовывоз с:</strong> <?= date('d.m.Y', strtotime($app['pickup_date'])) ?> (с 8:00 до 18:00)</p>
+                            <?php else: ?>
+                                <p><strong>Доставка:</strong> <?= $app['town'] ?>, ул. <?= $app['street'] ?>, д. <?= $app['number'] ?>, кв. <?= $app['apartment'] ?></p>
+                                <?php
+                                $slot = null;
+                                if (!empty($app['delivery_slot'])) {
+                                    $stmt = $mysqli->prepare("SELECT start_time, end_time FROM delivery_slots WHERE id = ?");
+                                    $stmt->bind_param("i", $app['delivery_slot']);
+                                    $stmt->execute();
+                                    $slot = $stmt->get_result()->fetch_assoc();
+                                    $stmt->close();
+                                }
+                                ?>
+                                <?php if ($slot): ?>
+                                    <p><strong>Время доставки:</strong> <?= date('d.m.Y H:i', strtotime($slot['start_time'])) ?> – <?= date('H:i', strtotime($slot['end_time'])) ?></p>
+                                <?php endif; ?>
+                            <?php endif; ?>
 
-if ($is_manager_for_app && !$contract_exists): ?>
-    <form method="POST" style="margin-top: 10px;">
-        <input type="hidden" name="create_contract" value="<?= $app['app_id'] ?>">
-        <button type="submit">Создать договор</button>
-    </form>
-<?php elseif ($contract_exists): ?>
-    <p><strong>Договор создан</strong></p>
-<?php endif; ?>
+                            <div class="order-items">
+                                <h3>Состав заказа:</h3>
+                                <ul>
+                                    <?php
+                                    $total = 0;
+                                    $stmt = $mysqli->prepare("
+                                        SELECT p.name AS product_name, pl.price, bi.quantity
+                                        FROM basket_item bi
+                                        JOIN price_list pl ON bi.price_id = pl.id
+                                        JOIN product p ON pl.product_id = p.id
+                                        WHERE bi.basket_id = ?
+                                    ");
+                                    $stmt->bind_param("i", $app['basket_id']);
+                                    $stmt->execute();
+                                    $products = $stmt->get_result();
+                                    $stmt->close();
 
-        <p><strong>Итого по заявке:</strong> <?= number_format($total, 0, ',', ' ') ?> руб.</p>
-        <?php if ($app['status'] === 'in_process' && $app['workersnumber'] == $_SESSION['worker_id']): ?>
-        <form method="POST" style="margin-top: 10px;">
-        <input type="hidden" name="change_status_id" value="<?= $app['app_id'] ?>">
-        <label>Изменить статус:
-            <select name="new_status" required>
-                <option value="">-- выберите --</option>
-                <option value="done">Выполнено</option>
-                <option value="cancelled">Отменено</option>
-            </select>
-        </label>
-        <button type="submit">Применить</button>
-         </form>
-        <?php endif; ?>
+                                    while ($product = $products->fetch_assoc()):
+                                        $line = $product['price'] * $product['quantity'];
+                                        $total += $line;
+                                    ?>
+                                        <li><?= htmlspecialchars($product['product_name']) ?> — <?= $product['quantity'] ?> × <?= $product['price'] ?> = <?= number_format($line, 0, ',', ' ') ?> руб.</li>
+                                    <?php endwhile; ?>
+                                </ul>
+                                <p class="order-total"><strong>Итого:</strong> <?= number_format($total, 0, ',', ' ') ?> руб.</p>
+                            </div>
 
+                            <?php
+                            $is_manager_for_app = ($app['workersnumber'] == $_SESSION['worker_id']);
+                            $stmt = $mysqli->prepare("SELECT id FROM contract WHERE application_id = ?");
+                            $stmt->bind_param("i", $app['app_id']);
+                            $stmt->execute();
+                            $contract_exists = $stmt->get_result()->num_rows > 0;
+                            $stmt->close();
 
-        <!-- Выпадающий список сотрудников -->
-<form method="POST" style="margin-bottom: 10px;">
-    <input type="hidden" name="application_id" value="<?= $app['app_id'] ?>">
-    <label>Менеджер:
-        <select name="worker_id" <?= $app['status'] !== 'to_do' ? 'disabled' : '' ?>>
-            <option value="">-- Выбрать менеджера --</option>
-            <?php foreach ($managers as $manager): ?>
-                <option value="<?= $manager['workersnumber'] ?>"
-                    <?= $app['workersnumber'] == $manager['workersnumber'] ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($manager['surname'] . ' ' . $manager['name'] . ' ' . $manager['patronymic']) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-    </label>
-    <?php if ($app['status'] === 'to_do'): ?>
-        <button type="submit">Назначить</button>
-    <?php endif; ?>
-</form>
+                            if ($is_manager_for_app && !$contract_exists): ?>
+                                <form method="POST" class="contract-form">
+                                    <input type="hidden" name="create_contract" value="<?= $app['app_id'] ?>">
+                                    <button type="submit" class="submit-button">Создать договор</button>
+                                </form>
+                            <?php elseif ($contract_exists): ?>
+                                <p class="contract-info">Договор создан</p>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                <?php endwhile; ?>
+            </div>
+        </main>
+    </div>
 
-
-<!-- Кнопка создать задачу (только для назначенного менеджера) -->
-    <?php if (isset($_SESSION['worker_id']) && $_SESSION['worker_id'] == $app['workersnumber']): ?>
-    <form action="create_task.php" method="GET" style="margin-top: 5px;">
-        <input type="hidden" name="application_id" value="<?= $app['app_id'] ?>">
-        <button type="submit">Создать задачу</button>
-    </form>
-    <?php endif; ?>
-
-
-    <?php endwhile; ?>
+    <footer class="footer">
+        <div class="footer__content">
+            <p>Телефон для связи: +375-17-272-49-38 | Почтовый адрес: info@tmcontact.by | Юридический адрес: г.Минск, ул.Мележа, д.5, корп.2, оф.1504</p>
+        </div>
+    </footer>
 </body>
 </html>

@@ -7,7 +7,7 @@ session_start();
 <head>
     <meta charset="UTF-8">
     <title>Главная страница</title>
-    <link rel="stylesheet" href="style/index.css">
+    <link rel="stylesheet" href="style/main.css">
 </head>
 <body>
     <div class="main__content">

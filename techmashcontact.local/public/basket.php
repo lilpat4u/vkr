@@ -100,7 +100,7 @@ $stmt->close();
 <head>
     <meta charset="UTF-8">
     <title>Корзина</title>
-    <link rel="stylesheet" href="style/basket.css">
+    <link rel="stylesheet" href="style/main.css">
     <script>
     function updateQuantity(input, itemId) {
         const quantity = input.value;
@@ -120,15 +120,15 @@ $stmt->close();
     </script>
 </head>
 <body>
- <div class="main__content">
+    <div class="main__content">
         <header class="header">
-           <div class="header__list">
-             <a href="index.php" class="header__link">Главная</a>
-             <a href="products.php" class="header__link">Продукция</a>
-             <a href="my_orders.php" class="header__link">Мои заказы</a>
-             <?php if (!empty($_SESSION['client_login'])): ?>
-             <a href="basket.php" class="header__link">Корзина</a>
-              <?php endif; ?>
+            <div class="header__list">
+                <a href="index.php" class="header__link">Главная</a>
+                <a href="products.php" class="header__link">Продукция</a>
+                <a href="my_orders.php" class="header__link">Мои заказы</a>
+                <?php if (!empty($_SESSION['client_login'])): ?>
+                <a href="basket.php" class="header__link">Корзина</a>
+                <?php endif; ?>
             </div>
 
             <div class="header__profile">
@@ -145,62 +145,73 @@ $stmt->close();
                 ?>
             </div>
         </header>
-        </div>
 
-    <h2>Ваша корзина</h2>
+        <main>
+            <div class="main__label">
+                <h2>Ваша корзина</h2>
+            </div>
 
-    <?php if (empty($items)): ?>
-        <p>Корзина пуста.</p>
-    <?php else: ?>
-        <table border="1" cellpadding="8" cellspacing="0">
-            <thead>
-                <tr>
-                    <th>Наименование</th>
-                    <th>Цена</th>
-                    <th>Количество</th>
-                    <th>Ед. изм.</th>
-                    <th>Итого</th>
-                    <th>Действия</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($items as $item): ?>
-                    <tr>
-                        <td><?= htmlspecialchars($item['name']) ?></td>
-                        <td><?= number_format($item['price'], 2, ',', ' ') ?> руб.</td>
-                        <td>
-                            <input type="number"
-                                   value="<?= $item['quantity'] ?>"
-                                   min="1"
-                                   style="width: 60px;"
-                                   onchange="updateQuantity(this, <?= $item['item_id'] ?>)">
-                        </td>
-                        <td><?= htmlspecialchars($item['unit']) ?></td>
-                        <td><?= number_format($item['total'], 2, ',', ' ') ?> руб.</td>
-                        <td>
-                            <form method="post" style="display:inline;">
-                                <input type="hidden" name="item_id" value="<?= $item['item_id'] ?>">
-                                <button type="submit" name="delete_item" onclick="return confirm('Удалить этот товар из корзины?')">Удалить</button>
-                            </form>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+            <?php if (empty($items)): ?>
+                <p>Корзина пуста.</p>
+            <?php else: ?>
+                <div class="basket-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Наименование</th>
+                                <th>Цена</th>
+                                <th>Количество</th>
+                                <th>Ед. изм.</th>
+                                <th>Итого</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($items as $item): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($item['name']) ?></td>
+                                    <td><?= number_format($item['price'], 2, ',', ' ') ?> руб.</td>
+                                    <td>
+                                        <input type="number"
+                                               value="<?= $item['quantity'] ?>"
+                                               min="1"
+                                               class="quantity-input"
+                                               onchange="updateQuantity(this, <?= $item['item_id'] ?>)">
+                                    </td>
+                                    <td><?= htmlspecialchars($item['unit']) ?></td>
+                                    <td><?= number_format($item['total'], 2, ',', ' ') ?> руб.</td>
+                                    <td>
+                                        <form method="post" class="delete-form">
+                                            <input type="hidden" name="item_id" value="<?= $item['item_id'] ?>">
+                                            <button type="submit" name="delete_item" class="delete-button" onclick="return confirm('Удалить этот товар из корзины?')">Удалить</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
 
-        <h3>Общая сумма: <?= number_format($totalSum, 2, ',', ' ') ?> руб.</h3>
-    <?php endif; ?>
-    <?php if (!empty($items)): ?>
-        <form action="delivery_choice.php" method="get">
-             <button type="submit" style="margin-top: 20px;">Продолжить оформление</button>
-         </form>
-    <?php endif; ?>
+                <div class="basket-summary">
+                    <h3>Общая сумма: <?= number_format($totalSum, 2, ',', ' ') ?> руб.</h3>
+                    <?php if (!empty($items)): ?>
+                        <form action="delivery_choice.php" method="get">
+                            <button type="submit" class="continue-button">Продолжить оформление</button>
+                        </form>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
 
-    <p><a href="products.php">← Продолжить покупки</a></p>
-        <footer class="footer">
-    <div class="footer__content">
-        <p>Телефон для связи: +375-17-272-49-38 | Почтовый адрес: info@tmcontact.by | Юридический адрес: г.Минск, ул.Мележа, д.5, корп.2, оф.1504</p>
+            <div class="continue-shopping">
+                <a href="products.php" class="back-link">← Продолжить покупки</a>
+            </div>
+        </main>
     </div>
-</footer>
+
+    <footer class="footer">
+        <div class="footer__content">
+            <p>Телефон для связи: +375-17-272-49-38 | Почтовый адрес: info@tmcontact.by | Юридический адрес: г.Минск, ул.Мележа, д.5, корп.2, оф.1504</p>
+        </div>
+    </footer>
 </body>
 </html>

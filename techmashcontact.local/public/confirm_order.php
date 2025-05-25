@@ -54,42 +54,91 @@ $stmt->close();
 <head>
     <meta charset="UTF-8">
     <title>Подтверждение заказа</title>
+    <link rel="stylesheet" href="style/main.css">
 </head>
 <body>
-    <h1>Ваш заказ подтверждён!</h1>
+    <div class="main__content">
+        <header class="header">
+            <div class="header__list">
+                <a href="index.php" class="header__link">Главная</a>
+                <a href="products.php" class="header__link">Продукция</a>
+                <a href="my_orders.php" class="header__link">Мои заказы</a>
+                <?php if (!empty($_SESSION['client_login'])): ?>
+                <a href="basket.php" class="header__link">Корзина</a>
+                <?php endif; ?>
+            </div>
 
-    <h2>Детали доставки</h2>
-    <p><strong>Тип:</strong> <?= $delivery['type'] === 'selfdriven' ? 'Самовывоз' : 'Доставка' ?></p>
+            <div class="header__profile">
+                <?php 
+                if (empty($_SESSION['client_login'])) {
+                    echo "<p>Вы вошли на сайт, как гость</p>
+                          <form action='login.php'><button>Войти</button></form>
+                          <form action='reg.php'><button>Зарегистрироваться</button></form>";
+                } else {
+                    echo "<p>Добро пожаловать, " . htmlspecialchars($_SESSION['client_name']) . "!</p>";
+                    echo "<p>Вы успешно вошли в систему как " . htmlspecialchars($_SESSION['client_login']) . ".</p>";
+                    echo "<a href='logout.php'>Выйти</a>";
+                }
+                ?>
+            </div>
+        </header>
 
-    <?php if ($delivery['type'] === 'delivery'): ?>
-        <p><strong>Адрес:</strong> <?= $delivery['town'] ?>, ул. <?= $delivery['street'] ?>, д. <?= $delivery['number'] ?>, кв. <?= $delivery['apartment'] ?></p>
-        <?php if ($slot): ?>
-            <p><strong>Время доставки:</strong>
-                <?= date('d.m.Y H:i', strtotime($slot['start_time'])) ?> – <?= date('H:i', strtotime($slot['end_time'])) ?>
-            </p>
-        <?php endif; ?>
-    <?php else: ?>
-    <?php if (!empty($delivery['pickup_date'])): ?>
-        <p><strong>Дата самовывоза:</strong> <?= date('d.m.Y', strtotime($delivery['pickup_date'])) ?> (с 8:00 до 18:00)</p>
-    <?php else: ?>
-        <p><strong>Дата самовывоза:</strong> не указана</p>
-    <?php endif; ?>
-    <?php endif; ?>
+        <main>
+            <div class="main__label">
+                <h1>Ваш заказ подтверждён!</h1>
+            </div>
 
+            <div class="order-card">
+                <div class="order-header">
+                    <h2>Детали доставки</h2>
+                    <span class="order-status"><?= htmlspecialchars($app['status']) ?></span>
+                </div>
 
-    <h2>Состав заказа</h2>
-    <ul>
-        <?php
-        $total = 0;
-        while ($product = $products->fetch_assoc()):
-            $line = $product['price'] * $product['quantity'];
-            $total += $line;
-        ?>
-            <li><?= htmlspecialchars($product['product_name']) ?> — <?= $product['quantity'] ?> × <?= $product['price'] ?> = <?= $line ?> руб.</li>
-        <?php endwhile; ?>
-    </ul>
-    <p><strong>Итого:</strong> <?= $total ?> руб.</p>
+                <div class="order-details">
+                    <p><strong>Тип:</strong> <?= $delivery['type'] === 'selfdriven' ? 'Самовывоз' : 'Доставка' ?></p>
 
-    <h2>Статус заявки: <?= htmlspecialchars($app['status']) ?></h2>
+                    <?php if ($delivery['type'] === 'delivery'): ?>
+                        <p><strong>Адрес:</strong> <?= $delivery['town'] ?>, ул. <?= $delivery['street'] ?>, д. <?= $delivery['number'] ?>, кв. <?= $delivery['apartment'] ?></p>
+                        <?php if ($slot): ?>
+                            <p><strong>Время доставки:</strong>
+                                <?= date('d.m.Y H:i', strtotime($slot['start_time'])) ?> – <?= date('H:i', strtotime($slot['end_time'])) ?>
+                            </p>
+                        <?php endif; ?>
+                    <?php else: ?>
+                        <?php if (!empty($delivery['pickup_date'])): ?>
+                            <p><strong>Дата самовывоза:</strong> <?= date('d.m.Y', strtotime($delivery['pickup_date'])) ?> (с 8:00 до 18:00)</p>
+                        <?php else: ?>
+                            <p><strong>Дата самовывоза:</strong> не указана</p>
+                        <?php endif; ?>
+                    <?php endif; ?>
+
+                    <div class="order-items">
+                        <h3>Состав заказа:</h3>
+                        <ul>
+                            <?php
+                            $total = 0;
+                            while ($product = $products->fetch_assoc()):
+                                $line = $product['price'] * $product['quantity'];
+                                $total += $line;
+                            ?>
+                                <li><?= htmlspecialchars($product['product_name']) ?> — <?= $product['quantity'] ?> × <?= $product['price'] ?> = <?= number_format($line, 0, ',', ' ') ?> руб.</li>
+                            <?php endwhile; ?>
+                        </ul>
+                        <p class="order-total"><strong>Итого:</strong> <?= number_format($total, 0, ',', ' ') ?> руб.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="continue-shopping">
+                <a href="products.php" class="back-link">Вернуться к покупкам</a>
+            </div>
+        </main>
+    </div>
+
+    <footer class="footer">
+        <div class="footer__content">
+            <p>Телефон для связи: +375-17-272-49-38 | Почтовый адрес: info@tmcontact.by | Юридический адрес: г.Минск, ул.Мележа, д.5, корп.2, оф.1504</p>
+        </div>
+    </footer>
 </body>
 </html>
